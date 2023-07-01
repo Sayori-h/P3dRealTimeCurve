@@ -15,6 +15,7 @@
 #define new DEBUG_NEW
 #endif
 
+
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 
@@ -52,11 +53,13 @@ END_MESSAGE_MAP()
 // CrtChartDlg 对话框
 
 
-
 CrtChartDlg::CrtChartDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_RTCHART_DIALOG, pParent)
-	, secPointNum(10)
+	, secPointNum(2)
 	, strStateInfo(_T(""))
+	,m_hPE1{NULL}
+	,m_hPE2{NULL}
+	,m_hPE3{NULL}
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -133,7 +136,7 @@ BOOL CrtChartDlg::OnInitDialog()
 	PEnset(m_hPE1, PEP_nDATASHADOWS, PEDS_NONE);
 	PEnset(m_hPE2, PEP_nDATASHADOWS, PEDS_NONE);
 	PEnset(m_hPE3, PEP_nDATASHADOWS, PEDS_NONE);
-		// No Flicker //
+	// No Flicker //
 	PEnset(m_hPE1, PEP_bPREPAREIMAGES, TRUE);
 	PEnset(m_hPE1, PEP_bCACHEBMP, TRUE);
 	PEnset(m_hPE2, PEP_bPREPAREIMAGES, TRUE);
@@ -142,23 +145,23 @@ BOOL CrtChartDlg::OnInitDialog()
 	PEnset(m_hPE3, PEP_bCACHEBMP, TRUE);
 
 	PEnset(m_hPE1, PEP_nSUBSETS, 1);	//设置曲线条数
-	PEnset(m_hPE1, PEP_nPOINTS, 15);
+	PEnset(m_hPE1, PEP_nPOINTS, 30);
 	PEnset(m_hPE2, PEP_nSUBSETS, 1);	//设置曲线条数
-	PEnset(m_hPE2, PEP_nPOINTS, 15);
+	PEnset(m_hPE2, PEP_nPOINTS, 30);
 	PEnset(m_hPE3, PEP_nSUBSETS, 1);	//设置曲线条数
-	PEnset(m_hPE3, PEP_nPOINTS, 15);
+	PEnset(m_hPE3, PEP_nPOINTS, 30);
 
 	PEnset(m_hPE1, PEP_nPOINTSTOGRAPH, 1);  // set to lower number to show earliest 
 	PEnset(m_hPE1, PEP_nPOINTSTOGRAPHINIT, PEPTGI_LASTPOINTS);
-	PEnset(m_hPE1, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
+	PEnset(m_hPE1, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSBFCGRAPHED);
 
 	PEnset(m_hPE2, PEP_nPOINTSTOGRAPH, 1);  // set to lower number to show earliest 
 	PEnset(m_hPE2, PEP_nPOINTSTOGRAPHINIT, PEPTGI_LASTPOINTS);
-	PEnset(m_hPE2, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
+	PEnset(m_hPE2, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSBFCGRAPHED);
 
 	PEnset(m_hPE3, PEP_nPOINTSTOGRAPH, 1);  // set to lower number to show earliest 
 	PEnset(m_hPE3, PEP_nPOINTSTOGRAPHINIT, PEPTGI_LASTPOINTS);
-	PEnset(m_hPE3, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSLINE);
+	PEnset(m_hPE3, PEP_nPLOTTINGMETHOD, PEGPM_POINTSPLUSBFCGRAPHED);
 
 	int nPointTypes[] = { PEPT_DOTSOLID, PEPT_PLUS };
 	PEvset(m_hPE1, PEP_naSUBSETPOINTTYPES, nPointTypes, 1);
@@ -188,7 +191,7 @@ BOOL CrtChartDlg::OnInitDialog()
 
 	double manminY = 1.0F;
 	PEvset(m_hPE1, PEP_fMANUALMINY, &manminY, 1);
-	double manmaxY = 360.0F;
+	double manmaxY = 185.0F;
 	PEvset(m_hPE1, PEP_fMANUALMAXY, &manmaxY, 1);
 
 	manminY = 1.0F;
@@ -196,9 +199,9 @@ BOOL CrtChartDlg::OnInitDialog()
 	manmaxY = 15000.0F;
 	PEvset(m_hPE2, PEP_fMANUALMAXY, &manmaxY, 1);
 
-	manminY = -2.5F;
+	manminY = -50.0F;
 	PEvset(m_hPE3, PEP_fMANUALMINY, &manminY, 1);
-	manmaxY = 2.5F;
+	manmaxY = 50.0F;
 	PEvset(m_hPE3, PEP_fMANUALMAXY, &manmaxY, 1);
 	// Needed to allocate point labels so append logic works //
 	// Set last point label, Points - 1 //
@@ -207,20 +210,12 @@ BOOL CrtChartDlg::OnInitDialog()
 	PEszset(m_hPE3, PEP_szaPOINTLABELS, TEXT(""));
 
 	float f1 = 0.0F;
-	PEvsetcellEx(m_hPE1, PEP_faYDATA, 0, 0, &f1);
-	PEvsetcellEx(m_hPE1, PEP_faYDATA, 0, 1, &f1);
-	PEvsetcellEx(m_hPE1, PEP_faYDATA, 0, 2, &f1);
-	PEvsetcellEx(m_hPE1, PEP_faYDATA, 0, 3, &f1);
-
-	PEvsetcellEx(m_hPE2, PEP_faYDATA, 0, 0, &f1);
-	PEvsetcellEx(m_hPE2, PEP_faYDATA, 0, 1, &f1);
-	PEvsetcellEx(m_hPE2, PEP_faYDATA, 0, 2, &f1);
-	PEvsetcellEx(m_hPE2, PEP_faYDATA, 0, 3, &f1);
-
-	PEvsetcellEx(m_hPE3, PEP_faYDATA, 0, 0, &f1);
-	PEvsetcellEx(m_hPE3, PEP_faYDATA, 0, 1, &f1);
-	PEvsetcellEx(m_hPE3, PEP_faYDATA, 0, 2, &f1);
-	PEvsetcellEx(m_hPE3, PEP_faYDATA, 0, 3, &f1);
+	for (int i = 0; i < 29; i++)
+	{
+	PEvsetcellEx(m_hPE1, PEP_faYDATA, 0, i, &f1);
+	PEvsetcellEx(m_hPE2, PEP_faYDATA, 0, i, &f1);
+	PEvsetcellEx(m_hPE3, PEP_faYDATA, 0, i, &f1);
+	}
 	/*PEnset(m_hPE1, PEP_bFIXEDFONTS, TRUE);
 	PEnset(m_hPE2, PEP_bFIXEDFONTS, TRUE);*/
 	PEnset(m_hPE1, PEP_nFONTSIZE, PEFS_SMALL);
@@ -230,18 +225,18 @@ BOOL CrtChartDlg::OnInitDialog()
 	PEszset(m_hPE1, PEP_szMAINTITLE, _T(" AIRSPEED TRUE—SIM TIME"));
 	PEszset(m_hPE2, PEP_szMAINTITLE, _T(" PLANE ALTITUDE—SIM TIME"));
 	PEszset(m_hPE3, PEP_szMAINTITLE, _T(" PLANE PITCH DEGREES—SIM TIME"));
-	PEszset(m_hPE1, PEP_szSUBTITLE, _T(" "));
-	PEszset(m_hPE2, PEP_szSUBTITLE, _T(" "));
-	PEszset(m_hPE3, PEP_szSUBTITLE, _T(" "));
+	PEszset(m_hPE1, PEP_szSUBTITLE, _T("NUAA飞行技术系课题组内部软件"));
+	PEszset(m_hPE2, PEP_szSUBTITLE, _T("NUAA飞行技术系课题组内部软件"));
+	PEszset(m_hPE3, PEP_szSUBTITLE, _T("NUAA飞行技术系课题组内部软件"));
 
-	PEszset(m_hPE1, PEP_szYAXISLABEL, _T(" AIRSPEED TRUE(Knots)"));
+	PEszset(m_hPE1, PEP_szYAXISLABEL, _T(" AIRSPEED TRUE(Meters per second)"));
 	PEszset(m_hPE1, PEP_szXAXISLABEL, _T("SIM TIME(seconds)"));
 
 	
 	PEszset(m_hPE2, PEP_szYAXISLABEL, _T(" PLANE ALTITUDE (Feet)"));
 	PEszset(m_hPE2, PEP_szXAXISLABEL, _T("SIM TIME(seconds)"));
 
-	PEszset(m_hPE3, PEP_szYAXISLABEL, _T(" PLANE PITCH DEGREES (Radians)"));
+	PEszset(m_hPE3, PEP_szYAXISLABEL, _T(" PLANE PITCH DEGREES (Degrees)"));
 	PEszset(m_hPE3, PEP_szXAXISLABEL, _T("SIM TIME(seconds)"));
 	/*SetTimer(1, 50, NULL);*/
 
@@ -302,7 +297,6 @@ UINT RunDataHarvester(LPVOID Param)
 
 	CrtChartDlg* pDlg = (CrtChartDlg*)Param;
 
-
 	HRESULT hr;
 	bool bConnected = false;
 	CString str;
@@ -355,13 +349,11 @@ UINT RunDataHarvester(LPVOID Param)
 				fclose(g_pFile);
 				g_pFile = NULL;
 			}
-
 		}
 		else
 		{
 			hr = SimConnect_MenuDeleteItem(g_hSimConnect, EVENT_ID_START_HARVEST);
 		}
-
 		// Close.
 		hr = SimConnect_Close(g_hSimConnect);
 	}
@@ -370,7 +362,6 @@ UINT RunDataHarvester(LPVOID Param)
 		str = _T("Connection timeout!");
 		pDlg->GetDlgItem(IDC_STATEINFO)->SetWindowText(str);
 	}
-
 	return 0;
 }
 
@@ -396,7 +387,7 @@ void CrtChartDlg::OnBnClickedOk()
 LRESULT CrtChartDlg::OnUserMsgHdl(WPARAM wParam, LPARAM lParam)
 {
 	CString ttext;
-	float fNew1,fNew2, fNew3;
+	float fNew1,fNew2,fNew3;//must be float
 
 	double* dataArray = (double*)lParam;
 
