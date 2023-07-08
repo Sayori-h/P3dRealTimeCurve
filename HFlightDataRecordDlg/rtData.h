@@ -526,10 +526,10 @@ void CALLBACK MyDispatchProcRD(SIMCONNECT_RECV* pData, DWORD cbData, void* pCont
 #endif
 			}
 			
-			sd.pitch_v = pUserData->dR_VelocityX * 30.0f / 3.1415926f * 100;
-			sd.pitch_acc = pUserData->dR_AccelerationX * 2 * 3.1415926f * 100;
-			sd.roll_v = pUserData->dR_VelocityY * 30.0f / 3.1415926f * 100;
-			sd.roll_acc = pUserData->dR_AccelerationY * 2 * 3.1415926f * 100;
+			sd.pitch_v   = static_cast<int>(pUserData->dR_VelocityX * 30.0f / 3.1415926f * 100);
+			sd.pitch_acc = static_cast<int>(pUserData->dR_AccelerationX * 2 * 3.1415926f * 100);
+			sd.roll_v    = static_cast<int>(pUserData->dR_VelocityY * 30.0f / 3.1415926f * 100);
+			sd.roll_acc  = static_cast<int>(pUserData->dR_AccelerationY * 2 * 3.1415926f * 100);
 
 			char* buffer = new char[sizeof(SendData)];
 

@@ -398,13 +398,13 @@ LRESULT CrtChartDlg::OnUserMsgHdl(WPARAM wParam, LPARAM lParam)
 	ttext.Format(_T("%.1f"), dataArray[0]);
 	PEvset(m_hPE1, PEP_szaAPPENDPOINTLABELDATA, (void*)(LPCTSTR)ttext, 1);
 
-	fNew1 =dataArray[1];
+	fNew1 =static_cast<float>(dataArray[1]);
 	PEvset(m_hPE1, PEP_faAPPENDYDATA, &fNew1, 1);
-	fNew2 = dataArray[2];
+	fNew2 = static_cast<float>(dataArray[2]);
 
 	PEvset(m_hPE2, PEP_szaAPPENDPOINTLABELDATA, (void*)(LPCTSTR)ttext, 1);
 	PEvset(m_hPE2, PEP_faAPPENDYDATA, &fNew2, 1);
-	fNew3 = dataArray[3];
+	fNew3 = static_cast<float>(dataArray[3]);
 
 	PEvset(m_hPE3, PEP_szaAPPENDPOINTLABELDATA, (void*)(LPCTSTR)ttext, 1);
 	PEvset(m_hPE3, PEP_faAPPENDYDATA, &fNew3, 1);
